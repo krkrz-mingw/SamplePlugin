@@ -432,547 +432,547 @@ static void TVPRippleTransform_c_b(
 //---------------------------------------------------------------------------
 
 
-static void TVPRippleTransform_sse2_f(
-	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
-	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio) {
-	__m128i mratio = _mm_set1_epi16( (short)(ratio<<7) );
-	__m128i mzero = _mm_setzero_si128();
-	int limit = (num>>1)<<1;
-	int i = 0;
-	for( ; i < limit; i+=2)
-	{
-		tjs_int n1 = driftmap[displacemap[i+0]];
-		tjs_int n2 = driftmap[displacemap[i+1]];
-		tjs_intptr_t ofs1 = (int)((i+0 - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
-		tjs_intptr_t ofs2 = (int)((i+1 - (int)(char)(n2>>8))*sizeof(tjs_uint32)) + (int)(char)(n2)*pitch;
-		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
-		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
-		__m128i ms12 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs2] );
-		__m128i ms22 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs2] );
-		ms2 = _mm_unpacklo_epi32( ms2, ms22 );
-		ms1 = _mm_unpacklo_epi32( ms1, ms12 );
-		ms2 = _mm_unpacklo_epi8( ms2, mzero );
-		ms1 = _mm_unpacklo_epi8( ms1, mzero );
-		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
-		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
-		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
-		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
-		ms1 = _mm_packus_epi16( ms1, ms1 );
-		_mm_storel_epi64( (__m128i *)&dest[i], ms1 );
-	}
-	if( i < num )
-	{
-		tjs_int n1 = driftmap[displacemap[i]];
-		tjs_intptr_t ofs1 = (int)((i - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
-		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
-		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
-		ms2 = _mm_unpacklo_epi8( ms2, mzero );
-		ms1 = _mm_unpacklo_epi8( ms1, mzero );
-		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
-		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
-		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
-		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
-		ms1 = _mm_packus_epi16( ms1, ms1 );
-		dest[i] = _mm_cvtsi128_si32( ms1 );
-	}
-}
+// static void TVPRippleTransform_sse2_f(
+// 	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
+// 	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio) {
+// 	__m128i mratio = _mm_set1_epi16( (short)(ratio<<7) );
+// 	__m128i mzero = _mm_setzero_si128();
+// 	int limit = (num>>1)<<1;
+// 	int i = 0;
+// 	for( ; i < limit; i+=2)
+// 	{
+// 		tjs_int n1 = driftmap[displacemap[i+0]];
+// 		tjs_int n2 = driftmap[displacemap[i+1]];
+// 		tjs_intptr_t ofs1 = (int)((i+0 - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
+// 		tjs_intptr_t ofs2 = (int)((i+1 - (int)(char)(n2>>8))*sizeof(tjs_uint32)) + (int)(char)(n2)*pitch;
+// 		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
+// 		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
+// 		__m128i ms12 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs2] );
+// 		__m128i ms22 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs2] );
+// 		ms2 = _mm_unpacklo_epi32( ms2, ms22 );
+// 		ms1 = _mm_unpacklo_epi32( ms1, ms12 );
+// 		ms2 = _mm_unpacklo_epi8( ms2, mzero );
+// 		ms1 = _mm_unpacklo_epi8( ms1, mzero );
+// 		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
+// 		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
+// 		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
+// 		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
+// 		ms1 = _mm_packus_epi16( ms1, ms1 );
+// 		_mm_storel_epi64( (__m128i *)&dest[i], ms1 );
+// 	}
+// 	if( i < num )
+// 	{
+// 		tjs_int n1 = driftmap[displacemap[i]];
+// 		tjs_intptr_t ofs1 = (int)((i - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
+// 		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
+// 		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
+// 		ms2 = _mm_unpacklo_epi8( ms2, mzero );
+// 		ms1 = _mm_unpacklo_epi8( ms1, mzero );
+// 		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
+// 		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
+// 		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
+// 		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
+// 		ms1 = _mm_packus_epi16( ms1, ms1 );
+// 		dest[i] = _mm_cvtsi128_si32( ms1 );
+// 	}
+// }
 
-static void TVPRippleTransform_sse2_b(
-	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
-	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio) {
-	__m128i mratio = _mm_set1_epi16( (short)(ratio<<7) );
-	__m128i mzero = _mm_setzero_si128();
-	int limit = (num>>1)<<1;
-	int i = 0;
-	for( ; i < limit; i+=2)
-	{
-		tjs_int n1 = driftmap[*(displacemap--)];
-		tjs_int n2 = driftmap[*(displacemap--)];
-		tjs_intptr_t ofs1 = (int)((i+0 - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
-		tjs_intptr_t ofs2 = (int)((i+1 - (int)(char)(n2>>8))*sizeof(tjs_uint32)) + (int)(char)(n2)*pitch;
-		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
-		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
-		__m128i ms12 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs2] );
-		__m128i ms22 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs2] );
-		ms2 = _mm_unpacklo_epi32( ms2, ms22 );
-		ms1 = _mm_unpacklo_epi32( ms1, ms12 );
-		ms2 = _mm_unpacklo_epi8( ms2, mzero );
-		ms1 = _mm_unpacklo_epi8( ms1, mzero );
-		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
-		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
-		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
-		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
-		ms1 = _mm_packus_epi16( ms1, ms1 );
-		_mm_storel_epi64( (__m128i *)&dest[i], ms1 );
-	}
-	if( i < num )
-	{
-		tjs_int n1 = driftmap[*(displacemap--)];
-		tjs_intptr_t ofs1 = (int)((i - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
-		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
-		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
-		ms2 = _mm_unpacklo_epi8( ms2, mzero );
-		ms1 = _mm_unpacklo_epi8( ms1, mzero );
-		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
-		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
-		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
-		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
-		ms1 = _mm_packus_epi16( ms1, ms1 );
-		dest[i] = _mm_cvtsi128_si32( ms1 );
-	}
-}
+// static void TVPRippleTransform_sse2_b(
+// 	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
+// 	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio) {
+// 	__m128i mratio = _mm_set1_epi16( (short)(ratio<<7) );
+// 	__m128i mzero = _mm_setzero_si128();
+// 	int limit = (num>>1)<<1;
+// 	int i = 0;
+// 	for( ; i < limit; i+=2)
+// 	{
+// 		tjs_int n1 = driftmap[*(displacemap--)];
+// 		tjs_int n2 = driftmap[*(displacemap--)];
+// 		tjs_intptr_t ofs1 = (int)((i+0 - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
+// 		tjs_intptr_t ofs2 = (int)((i+1 - (int)(char)(n2>>8))*sizeof(tjs_uint32)) + (int)(char)(n2)*pitch;
+// 		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
+// 		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
+// 		__m128i ms12 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs2] );
+// 		__m128i ms22 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs2] );
+// 		ms2 = _mm_unpacklo_epi32( ms2, ms22 );
+// 		ms1 = _mm_unpacklo_epi32( ms1, ms12 );
+// 		ms2 = _mm_unpacklo_epi8( ms2, mzero );
+// 		ms1 = _mm_unpacklo_epi8( ms1, mzero );
+// 		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
+// 		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
+// 		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
+// 		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
+// 		ms1 = _mm_packus_epi16( ms1, ms1 );
+// 		_mm_storel_epi64( (__m128i *)&dest[i], ms1 );
+// 	}
+// 	if( i < num )
+// 	{
+// 		tjs_int n1 = driftmap[*(displacemap--)];
+// 		tjs_intptr_t ofs1 = (int)((i - (int)(char)(n1>>8))*sizeof(tjs_uint32)) + (int)(char)(n1)*pitch;
+// 		__m128i ms2 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src2[ofs1] );
+// 		__m128i ms1 = _mm_cvtsi32_si128( *(const tjs_uint32*)&src1[ofs1] );
+// 		ms2 = _mm_unpacklo_epi8( ms2, mzero );
+// 		ms1 = _mm_unpacklo_epi8( ms1, mzero );
+// 		ms2 = _mm_sub_epi16( ms2, ms1 );		// ms2 - ms1
+// 		ms2 = _mm_mulhi_epi16( ms2, mratio );	// ms2 * mratio
+// 		ms2 = _mm_slli_epi16( ms2, 1 );			// ms2 << 1
+// 		ms1 = _mm_add_epi16( ms1, ms2 );		// ms1 + ms2
+// 		ms1 = _mm_packus_epi16( ms1, ms1 );
+// 		dest[i] = _mm_cvtsi128_si32( ms1 );
+// 	}
+// }
 
-#ifndef _M_X64
-//---------------------------------------------------------------------------
-static void TVPRippleTransform_mmx_f(
-	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
-	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
-{
-	_asm
-	{
-		mov			esi,			driftmap
-		mov			edi,			dest
-		xor			ebx,			ebx
-		mov			ecx,			displacemap
-		movd		mm7,			ratio
-		psllq		mm7,			7
-		punpcklwd	mm7,			mm7
-		punpcklwd	mm7,			mm7
-		pxor		mm0,			mm0
+// #ifndef _M_X64
+// //---------------------------------------------------------------------------
+// static void TVPRippleTransform_mmx_f(
+// 	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
+// 	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
+// {
+// 	_asm
+// 	{
+// 		mov			esi,			driftmap
+// 		mov			edi,			dest
+// 		xor			ebx,			ebx
+// 		mov			ecx,			displacemap
+// 		movd		mm7,			ratio
+// 		psllq		mm7,			7
+// 		punpcklwd	mm7,			mm7
+// 		punpcklwd	mm7,			mm7
+// 		pxor		mm0,			mm0
 
-		sub			num,			1
-																		// ↓スレッド
-		cmp			num,			ebx
-		jng			pexit_mmx_f
+// 		sub			num,			1
+// 																		// ↓スレッド
+// 		cmp			num,			ebx
+// 		jng			pexit_mmx_f
 
-	ploop_mmx_f_1:	// このループでは２つのスレッドを適当にインターリーブしている
-		movzx		eax,			word ptr [ecx + ebx*2]				// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 1
-		movsx		edx,			ah									// 1
-		movsx		eax,			al									// 1
-		neg			edx													// 1
-		imul		eax,			pitch								// 1
-		lea			edx,			[ebx + edx]							// 1
-		mov			ecx,			src1								// 1
-		lea			eax,			[eax + edx*4]						// 1
+// 	ploop_mmx_f_1:	// このループでは２つのスレッドを適当にインターリーブしている
+// 		movzx		eax,			word ptr [ecx + ebx*2]				// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 1
+// 		movsx		edx,			ah									// 1
+// 		movsx		eax,			al									// 1
+// 		neg			edx													// 1
+// 		imul		eax,			pitch								// 1
+// 		lea			edx,			[ebx + edx]							// 1
+// 		mov			ecx,			src1								// 1
+// 		lea			eax,			[eax + edx*4]						// 1
 
-		mov			edx,			src2								// 1
-		movd		mm2,			[ecx + eax]							// 1
-		movd		mm1,			[edx + eax]							// 1
-		mov			ecx,			displacemap							// 2
-		punpcklbw	mm1,			mm0									// 1
-		movzx		eax,			word ptr [ecx + ebx*2 + 2]			// 2
-		punpcklbw	mm2,			mm0									// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 2
-		psubw		mm1,			mm2									// 1
-		movsx		edx,			ah									// 2
-		pmulhw		mm1,			mm7									// 1
-		neg			edx													// 2
-		psllw		mm1,			1									// 1
-		movsx		eax,			al									// 2
-		paddw		mm2,			mm1									// 1
-		imul		eax,			pitch								// 2
+// 		mov			edx,			src2								// 1
+// 		movd		mm2,			[ecx + eax]							// 1
+// 		movd		mm1,			[edx + eax]							// 1
+// 		mov			ecx,			displacemap							// 2
+// 		punpcklbw	mm1,			mm0									// 1
+// 		movzx		eax,			word ptr [ecx + ebx*2 + 2]			// 2
+// 		punpcklbw	mm2,			mm0									// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 2
+// 		psubw		mm1,			mm2									// 1
+// 		movsx		edx,			ah									// 2
+// 		pmulhw		mm1,			mm7									// 1
+// 		neg			edx													// 2
+// 		psllw		mm1,			1									// 1
+// 		movsx		eax,			al									// 2
+// 		paddw		mm2,			mm1									// 1
+// 		imul		eax,			pitch								// 2
 
-		lea			edx,			[ebx + edx + 1]						// 2
-		mov			ecx,			src1								// 2
-		lea			eax,			[eax + edx*4]						// 2
+// 		lea			edx,			[ebx + edx + 1]						// 2
+// 		mov			ecx,			src1								// 2
+// 		lea			eax,			[eax + edx*4]						// 2
 
-		mov			edx,			src2								// 2
-		movd		mm4,			[ecx + eax]							// 2
-		movd		mm3,			[edx + eax]							// 2
-		punpcklbw	mm3,			mm0									// 2
-		punpcklbw	mm4,			mm0									// 2
-		psubw		mm3,			mm4									// 2
-		pmulhw		mm3,			mm7									// 2
-		psllw		mm3,			1									// 2
-		add			ebx,			2
-		paddw		mm4,			mm3									// 2
-		cmp			num,			ebx
-		packuswb	mm2,			mm4									// 1,2
-		mov			ecx,			displacemap							// 1
-		movq		[edi+ebx*4-8],	mm2									// 1,2
+// 		mov			edx,			src2								// 2
+// 		movd		mm4,			[ecx + eax]							// 2
+// 		movd		mm3,			[edx + eax]							// 2
+// 		punpcklbw	mm3,			mm0									// 2
+// 		punpcklbw	mm4,			mm0									// 2
+// 		psubw		mm3,			mm4									// 2
+// 		pmulhw		mm3,			mm7									// 2
+// 		psllw		mm3,			1									// 2
+// 		add			ebx,			2
+// 		paddw		mm4,			mm3									// 2
+// 		cmp			num,			ebx
+// 		packuswb	mm2,			mm4									// 1,2
+// 		mov			ecx,			displacemap							// 1
+// 		movq		[edi+ebx*4-8],	mm2									// 1,2
 
-		jg			ploop_mmx_f_1
+// 		jg			ploop_mmx_f_1
 
-		add			num,			1
+// 		add			num,			1
 
-		cmp			num,			ebx
-		jng			pexit_mmx_f
+// 		cmp			num,			ebx
+// 		jng			pexit_mmx_f
 
-	ploop_mmx_f_2:
-		movzx		eax,			word ptr [ecx + ebx*2]
-		movzx		eax,			word ptr [esi + eax*2]
-		movsx		edx,			ah
-		neg			edx
-		lea			edx,			[ebx + edx]
-		movsx		eax,			al
-		imul		eax,			pitch
-		lea			eax,			[eax + edx*4]
+// 	ploop_mmx_f_2:
+// 		movzx		eax,			word ptr [ecx + ebx*2]
+// 		movzx		eax,			word ptr [esi + eax*2]
+// 		movsx		edx,			ah
+// 		neg			edx
+// 		lea			edx,			[ebx + edx]
+// 		movsx		eax,			al
+// 		imul		eax,			pitch
+// 		lea			eax,			[eax + edx*4]
 
-		mov			edx,			src2
-		mov			ecx,			src1
-		movd		mm1,			[edx + eax]
-		movd		mm2,			[ecx + eax]
-		punpcklbw	mm1,			mm0
-		punpcklbw	mm2,			mm0
-		psubw		mm1,			mm2
-		pmulhw		mm1,			mm7
-		psllw		mm1,			1
-		paddw		mm2,			mm1
-		packuswb	mm2,			mm0
-		mov			ecx,			displacemap
-		movd		[edi+ebx*4],	mm2
+// 		mov			edx,			src2
+// 		mov			ecx,			src1
+// 		movd		mm1,			[edx + eax]
+// 		movd		mm2,			[ecx + eax]
+// 		punpcklbw	mm1,			mm0
+// 		punpcklbw	mm2,			mm0
+// 		psubw		mm1,			mm2
+// 		pmulhw		mm1,			mm7
+// 		psllw		mm1,			1
+// 		paddw		mm2,			mm1
+// 		packuswb	mm2,			mm0
+// 		mov			ecx,			displacemap
+// 		movd		[edi+ebx*4],	mm2
 
-		inc			ebx
+// 		inc			ebx
 
-		cmp			num,			ebx
-		jg			ploop_mmx_f_2
+// 		cmp			num,			ebx
+// 		jg			ploop_mmx_f_2
 
-	pexit_mmx_f:
+// 	pexit_mmx_f:
 
-		emms
-	}
-}
-//---------------------------------------------------------------------------
-static void TVPRippleTransform_mmx_b(
-	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
-	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
-{
-	_asm
-	{
-		mov			esi,			driftmap
-		mov			edi,			dest
-		xor			ebx,			ebx
-		mov			ecx,			displacemap
-		movd		mm7,			ratio
-		psllq		mm7,			7
-		punpcklwd	mm7,			mm7
-		punpcklwd	mm7,			mm7
-		pxor		mm0,			mm0
+// 		emms
+// 	}
+// }
+// //---------------------------------------------------------------------------
+// static void TVPRippleTransform_mmx_b(
+// 	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
+// 	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
+// {
+// 	_asm
+// 	{
+// 		mov			esi,			driftmap
+// 		mov			edi,			dest
+// 		xor			ebx,			ebx
+// 		mov			ecx,			displacemap
+// 		movd		mm7,			ratio
+// 		psllq		mm7,			7
+// 		punpcklwd	mm7,			mm7
+// 		punpcklwd	mm7,			mm7
+// 		pxor		mm0,			mm0
 
-		sub			num,			1
+// 		sub			num,			1
 
-		cmp			num,			ebx
-		jng			pexit_mmx_b
+// 		cmp			num,			ebx
+// 		jng			pexit_mmx_b
 
-	ploop_mmx_b_1:
-		movzx		eax,			word ptr [ecx]						// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 1
-		movsx		edx,			ah									// 1
-		movsx		eax,			al									// 1
-		imul		eax,			pitch								// 1
-		lea			edx,			[ebx + edx]							// 1
-		mov			esi,			src1								// 1
-		lea			eax,			[eax + edx*4]						// 1
+// 	ploop_mmx_b_1:
+// 		movzx		eax,			word ptr [ecx]						// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 1
+// 		movsx		edx,			ah									// 1
+// 		movsx		eax,			al									// 1
+// 		imul		eax,			pitch								// 1
+// 		lea			edx,			[ebx + edx]							// 1
+// 		mov			esi,			src1								// 1
+// 		lea			eax,			[eax + edx*4]						// 1
 
-		mov			edx,			src2								// 1
-		movd		mm2,			[esi + eax]							// 1
-		movd		mm1,			[edx + eax]							// 1
-		mov			esi,			driftmap							// 2
-		punpcklbw	mm1,			mm0									// 1
-		movzx		eax,			word ptr [ecx - 2]					// 2
-		punpcklbw	mm2,			mm0									// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 2
-		psubw		mm1,			mm2									// 1
-		movsx		edx,			ah									// 2
-		pmulhw		mm1,			mm7									// 1
-		psllw		mm1,			1									// 1
-		movsx		eax,			al									// 2
-		paddw		mm2,			mm1									// 1
-		imul		eax,			pitch								// 2
+// 		mov			edx,			src2								// 1
+// 		movd		mm2,			[esi + eax]							// 1
+// 		movd		mm1,			[edx + eax]							// 1
+// 		mov			esi,			driftmap							// 2
+// 		punpcklbw	mm1,			mm0									// 1
+// 		movzx		eax,			word ptr [ecx - 2]					// 2
+// 		punpcklbw	mm2,			mm0									// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 2
+// 		psubw		mm1,			mm2									// 1
+// 		movsx		edx,			ah									// 2
+// 		pmulhw		mm1,			mm7									// 1
+// 		psllw		mm1,			1									// 1
+// 		movsx		eax,			al									// 2
+// 		paddw		mm2,			mm1									// 1
+// 		imul		eax,			pitch								// 2
 
-		lea			edx,			[ebx + edx + 1]						// 2
-		mov			esi,			src1								// 2
-		lea			eax,			[eax + edx*4]						// 2
+// 		lea			edx,			[ebx + edx + 1]						// 2
+// 		mov			esi,			src1								// 2
+// 		lea			eax,			[eax + edx*4]						// 2
 
-		mov			edx,			src2								// 2
-		movd		mm4,			[esi + eax]							// 2
-		movd		mm3,			[edx + eax]							// 2
-		punpcklbw	mm3,			mm0									// 2
-		punpcklbw	mm4,			mm0									// 2
-		psubw		mm3,			mm4									// 2
-		sub			ecx,			4
-		pmulhw		mm3,			mm7									// 2
-		psllw		mm3,			1									// 2
-		add			ebx,			2
-		paddw		mm4,			mm3									// 2
-		cmp			num,			ebx
-		packuswb	mm2,			mm4									// 1,2
-		mov			esi,			driftmap							// 1
-		movq		[edi+ebx*4-8],	mm2									// 1,2
+// 		mov			edx,			src2								// 2
+// 		movd		mm4,			[esi + eax]							// 2
+// 		movd		mm3,			[edx + eax]							// 2
+// 		punpcklbw	mm3,			mm0									// 2
+// 		punpcklbw	mm4,			mm0									// 2
+// 		psubw		mm3,			mm4									// 2
+// 		sub			ecx,			4
+// 		pmulhw		mm3,			mm7									// 2
+// 		psllw		mm3,			1									// 2
+// 		add			ebx,			2
+// 		paddw		mm4,			mm3									// 2
+// 		cmp			num,			ebx
+// 		packuswb	mm2,			mm4									// 1,2
+// 		mov			esi,			driftmap							// 1
+// 		movq		[edi+ebx*4-8],	mm2									// 1,2
 
-		jg			ploop_mmx_b_1
+// 		jg			ploop_mmx_b_1
 
-		add			num,			1
+// 		add			num,			1
 
-		cmp			num,			ebx
-		jng			pexit_mmx_b
+// 		cmp			num,			ebx
+// 		jng			pexit_mmx_b
 
-	ploop_mmx_b_2:
-		movzx		eax,			word ptr [ecx]
-		movzx		eax,			word ptr [esi + eax*2]
-		movsx		edx,			ah
-		lea			edx,			[ebx + edx]
-		movsx		eax,			al
-		imul		eax,			pitch
-		lea			eax,			[eax + edx*4]
+// 	ploop_mmx_b_2:
+// 		movzx		eax,			word ptr [ecx]
+// 		movzx		eax,			word ptr [esi + eax*2]
+// 		movsx		edx,			ah
+// 		lea			edx,			[ebx + edx]
+// 		movsx		eax,			al
+// 		imul		eax,			pitch
+// 		lea			eax,			[eax + edx*4]
 
-		mov			edx,			src2
-		mov			esi,			src1
-		movd		mm1,			[edx + eax]
-		movd		mm2,			[esi + eax]
-		punpcklbw	mm1,			mm0
-		punpcklbw	mm2,			mm0
-		psubw		mm1,			mm2
-		pmulhw		mm1,			mm7
-		psllw		mm1,			1
-		paddw		mm2,			mm1
-		packuswb	mm2,			mm0
-		mov			esi,			driftmap
-		movd		[edi+ebx*4],	mm2
+// 		mov			edx,			src2
+// 		mov			esi,			src1
+// 		movd		mm1,			[edx + eax]
+// 		movd		mm2,			[esi + eax]
+// 		punpcklbw	mm1,			mm0
+// 		punpcklbw	mm2,			mm0
+// 		psubw		mm1,			mm2
+// 		pmulhw		mm1,			mm7
+// 		psllw		mm1,			1
+// 		paddw		mm2,			mm1
+// 		packuswb	mm2,			mm0
+// 		mov			esi,			driftmap
+// 		movd		[edi+ebx*4],	mm2
 
-		inc			ebx
-		sub			ecx,			2
+// 		inc			ebx
+// 		sub			ecx,			2
 
-		cmp			num,			ebx
-		jg			ploop_mmx_b_2
+// 		cmp			num,			ebx
+// 		jg			ploop_mmx_b_2
 
-	pexit_mmx_b:
+// 	pexit_mmx_b:
 
-		emms
-	}
-}
-//---------------------------------------------------------------------------
-static void TVPRippleTransform_emmx_f(
-	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
-	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
-{
-	_asm
-	{
-		mov			esi,			driftmap
-		mov			edi,			dest
-		xor			ebx,			ebx
-		mov			ecx,			displacemap
-		movd		mm7,			ratio
-		psllq		mm7,			7
-		punpcklwd	mm7,			mm7
-		punpcklwd	mm7,			mm7
-		pxor		mm0,			mm0
+// 		emms
+// 	}
+// }
+// //---------------------------------------------------------------------------
+// static void TVPRippleTransform_emmx_f(
+// 	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
+// 	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
+// {
+// 	_asm
+// 	{
+// 		mov			esi,			driftmap
+// 		mov			edi,			dest
+// 		xor			ebx,			ebx
+// 		mov			ecx,			displacemap
+// 		movd		mm7,			ratio
+// 		psllq		mm7,			7
+// 		punpcklwd	mm7,			mm7
+// 		punpcklwd	mm7,			mm7
+// 		pxor		mm0,			mm0
 
-		sub			num,			1
-																		// ↓スレッド
-		cmp			num,			ebx
-		jng			pexit_emmx_f
+// 		sub			num,			1
+// 																		// ↓スレッド
+// 		cmp			num,			ebx
+// 		jng			pexit_emmx_f
 
-	ploop_emmx_f_1:
-		movzx		eax,			word ptr [ecx + ebx*2]				// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 1
-		movsx		edx,			ah									// 1
-		movsx		eax,			al									// 1
-		neg			edx													// 1
-		imul		eax,			pitch								// 1
-		lea			edx,			[ebx + edx]							// 1
-		mov			ecx,			src1								// 1
-		lea			eax,			[eax + edx*4]						// 1
+// 	ploop_emmx_f_1:
+// 		movzx		eax,			word ptr [ecx + ebx*2]				// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 1
+// 		movsx		edx,			ah									// 1
+// 		movsx		eax,			al									// 1
+// 		neg			edx													// 1
+// 		imul		eax,			pitch								// 1
+// 		lea			edx,			[ebx + edx]							// 1
+// 		mov			ecx,			src1								// 1
+// 		lea			eax,			[eax + edx*4]						// 1
 
-		mov			edx,			src2								// 1
-		movd		mm2,			[ecx + eax]							// 1
-		movd		mm1,			[edx + eax]							// 1
-		mov			ecx,			displacemap							// 2
-		punpcklbw	mm1,			mm0									// 1
-		movzx		eax,			word ptr [ecx + ebx*2 + 2]			// 2
-		punpcklbw	mm2,			mm0									// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 2
-#ifdef __BORLANDC__
-		} __emit__ (0x0f, 0x18, 0x4c, 0x59, 0x10); _asm{ // prefetcht0	[ecx + ebx*2 + 16]
-#else
-		} _asm _emit 0x0f _asm _emit 0x18 _asm _emit 0x4c _asm _emit 0x59 _asm _emit 0x10 _asm{ // prefetcht0	[ecx + ebx*2 + 16]
-#endif
-		psubw		mm1,			mm2									// 1
-		movsx		edx,			ah									// 2
-		pmulhw		mm1,			mm7									// 1
-		neg			edx													// 2
-		psllw		mm1,			1									// 1
-		movsx		eax,			al									// 2
-		paddw		mm2,			mm1									// 1
-		imul		eax,			pitch								// 2
+// 		mov			edx,			src2								// 1
+// 		movd		mm2,			[ecx + eax]							// 1
+// 		movd		mm1,			[edx + eax]							// 1
+// 		mov			ecx,			displacemap							// 2
+// 		punpcklbw	mm1,			mm0									// 1
+// 		movzx		eax,			word ptr [ecx + ebx*2 + 2]			// 2
+// 		punpcklbw	mm2,			mm0									// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 2
+// #ifdef __BORLANDC__
+// 		} __emit__ (0x0f, 0x18, 0x4c, 0x59, 0x10); _asm{ // prefetcht0	[ecx + ebx*2 + 16]
+// #else
+// 		} _asm _emit 0x0f _asm _emit 0x18 _asm _emit 0x4c _asm _emit 0x59 _asm _emit 0x10 _asm{ // prefetcht0	[ecx + ebx*2 + 16]
+// #endif
+// 		psubw		mm1,			mm2									// 1
+// 		movsx		edx,			ah									// 2
+// 		pmulhw		mm1,			mm7									// 1
+// 		neg			edx													// 2
+// 		psllw		mm1,			1									// 1
+// 		movsx		eax,			al									// 2
+// 		paddw		mm2,			mm1									// 1
+// 		imul		eax,			pitch								// 2
 
-		lea			edx,			[ebx + edx + 1]						// 2
-		mov			ecx,			src1								// 2
-		lea			eax,			[eax + edx*4]						// 2
+// 		lea			edx,			[ebx + edx + 1]						// 2
+// 		mov			ecx,			src1								// 2
+// 		lea			eax,			[eax + edx*4]						// 2
 
-		mov			edx,			src2								// 2
-		movd		mm4,			[ecx + eax]							// 2
-		movd		mm3,			[edx + eax]							// 2
-		punpcklbw	mm3,			mm0									// 2
-		punpcklbw	mm4,			mm0									// 2
-		psubw		mm3,			mm4									// 2
-		pmulhw		mm3,			mm7									// 2
-		psllw		mm3,			1									// 2
-		add			ebx,			2
-		paddw		mm4,			mm3									// 2
-		cmp			num,			ebx
-		packuswb	mm2,			mm4									// 1,2
-		mov			ecx,			displacemap							// 1
-		movq		[edi+ebx*4-8],	mm2									// 1,2
+// 		mov			edx,			src2								// 2
+// 		movd		mm4,			[ecx + eax]							// 2
+// 		movd		mm3,			[edx + eax]							// 2
+// 		punpcklbw	mm3,			mm0									// 2
+// 		punpcklbw	mm4,			mm0									// 2
+// 		psubw		mm3,			mm4									// 2
+// 		pmulhw		mm3,			mm7									// 2
+// 		psllw		mm3,			1									// 2
+// 		add			ebx,			2
+// 		paddw		mm4,			mm3									// 2
+// 		cmp			num,			ebx
+// 		packuswb	mm2,			mm4									// 1,2
+// 		mov			ecx,			displacemap							// 1
+// 		movq		[edi+ebx*4-8],	mm2									// 1,2
 
-		jg			ploop_emmx_f_1
+// 		jg			ploop_emmx_f_1
 
-		add			num,			1
+// 		add			num,			1
 
-		cmp			num,			ebx
-		jng			pexit_emmx_f
+// 		cmp			num,			ebx
+// 		jng			pexit_emmx_f
 
-	ploop_emmx_f_2:
-		movzx		eax,			word ptr [ecx + ebx*2]
-		movzx		eax,			word ptr [esi + eax*2]
-		movsx		edx,			ah
-		neg			edx
-		lea			edx,			[ebx + edx]
-		movsx		eax,			al
-		imul		eax,			pitch
-		lea			eax,			[eax + edx*4]
+// 	ploop_emmx_f_2:
+// 		movzx		eax,			word ptr [ecx + ebx*2]
+// 		movzx		eax,			word ptr [esi + eax*2]
+// 		movsx		edx,			ah
+// 		neg			edx
+// 		lea			edx,			[ebx + edx]
+// 		movsx		eax,			al
+// 		imul		eax,			pitch
+// 		lea			eax,			[eax + edx*4]
 
-		mov			edx,			src2
-		mov			ecx,			src1
-		movd		mm1,			[edx + eax]
-		movd		mm2,			[ecx + eax]
-		punpcklbw	mm1,			mm0
-		punpcklbw	mm2,			mm0
-		psubw		mm1,			mm2
-		pmulhw		mm1,			mm7
-		psllw		mm1,			1
-		paddw		mm2,			mm1
-		packuswb	mm2,			mm0
-		mov			ecx,			displacemap
-		movd		[edi+ebx*4],	mm2
+// 		mov			edx,			src2
+// 		mov			ecx,			src1
+// 		movd		mm1,			[edx + eax]
+// 		movd		mm2,			[ecx + eax]
+// 		punpcklbw	mm1,			mm0
+// 		punpcklbw	mm2,			mm0
+// 		psubw		mm1,			mm2
+// 		pmulhw		mm1,			mm7
+// 		psllw		mm1,			1
+// 		paddw		mm2,			mm1
+// 		packuswb	mm2,			mm0
+// 		mov			ecx,			displacemap
+// 		movd		[edi+ebx*4],	mm2
 
-		inc			ebx
+// 		inc			ebx
 
-		cmp			num,			ebx
-		jg			ploop_emmx_f_2
+// 		cmp			num,			ebx
+// 		jg			ploop_emmx_f_2
 
-	pexit_emmx_f:
+// 	pexit_emmx_f:
 
-		emms
-	}
-}
-//---------------------------------------------------------------------------
-static void TVPRippleTransform_emmx_b(
-	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
-	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
-{
-	_asm
-	{
-		mov			esi,			driftmap
-		mov			edi,			dest
-		xor			ebx,			ebx
-		mov			ecx,			displacemap
-		movd		mm7,			ratio
-		psllq		mm7,			7
-		punpcklwd	mm7,			mm7
-		punpcklwd	mm7,			mm7
-		pxor		mm0,			mm0
+// 		emms
+// 	}
+// }
+// //---------------------------------------------------------------------------
+// static void TVPRippleTransform_emmx_b(
+// 	const tjs_uint16 *displacemap, const tjs_uint16 *driftmap, tjs_uint32 *dest,
+// 	tjs_int num, tjs_int pitch, const tjs_uint8 * src1, const tjs_uint8 * src2, tjs_int ratio)
+// {
+// 	_asm
+// 	{
+// 		mov			esi,			driftmap
+// 		mov			edi,			dest
+// 		xor			ebx,			ebx
+// 		mov			ecx,			displacemap
+// 		movd		mm7,			ratio
+// 		psllq		mm7,			7
+// 		punpcklwd	mm7,			mm7
+// 		punpcklwd	mm7,			mm7
+// 		pxor		mm0,			mm0
 
-		sub			num,			1
+// 		sub			num,			1
 
-		cmp			num,			ebx
-		jng			pexit_emmx_b
+// 		cmp			num,			ebx
+// 		jng			pexit_emmx_b
 
-	ploop_emmx_b_1:
-		movzx		eax,			word ptr [ecx]						// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 1
-		movsx		edx,			ah									// 1
-		movsx		eax,			al									// 1
-		imul		eax,			pitch								// 1
-		lea			edx,			[ebx + edx]							// 1
-		mov			esi,			src1								// 1
-		lea			eax,			[eax + edx*4]						// 1
+// 	ploop_emmx_b_1:
+// 		movzx		eax,			word ptr [ecx]						// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 1
+// 		movsx		edx,			ah									// 1
+// 		movsx		eax,			al									// 1
+// 		imul		eax,			pitch								// 1
+// 		lea			edx,			[ebx + edx]							// 1
+// 		mov			esi,			src1								// 1
+// 		lea			eax,			[eax + edx*4]						// 1
 
-		mov			edx,			src2								// 1
-		movd		mm2,			[esi + eax]							// 1
-		movd		mm1,			[edx + eax]							// 1
-		mov			esi,			driftmap							// 2
-		punpcklbw	mm1,			mm0									// 1
-		movzx		eax,			word ptr [ecx - 2]					// 2
-		punpcklbw	mm2,			mm0									// 1
-		movzx		eax,			word ptr [esi + eax*2]				// 2
-		psubw		mm1,			mm2									// 1
-		movsx		edx,			ah									// 2
-		pmulhw		mm1,			mm7									// 1
-#ifdef __BORLANDC__
-		} __emit__ (0x0f, 0x18, 0x49, 0xf4); _asm{ // prefetcht0	[ecx - 12]
-#else
-		} _asm _emit 0x0f _asm _emit 0x18 _asm _emit 0x49 _asm _emit 0xf4 _asm{ // prefetcht0	[ecx - 12]
-#endif
-		psllw		mm1,			1									// 1
-		movsx		eax,			al									// 2
-		paddw		mm2,			mm1									// 1
-		imul		eax,			pitch								// 2
+// 		mov			edx,			src2								// 1
+// 		movd		mm2,			[esi + eax]							// 1
+// 		movd		mm1,			[edx + eax]							// 1
+// 		mov			esi,			driftmap							// 2
+// 		punpcklbw	mm1,			mm0									// 1
+// 		movzx		eax,			word ptr [ecx - 2]					// 2
+// 		punpcklbw	mm2,			mm0									// 1
+// 		movzx		eax,			word ptr [esi + eax*2]				// 2
+// 		psubw		mm1,			mm2									// 1
+// 		movsx		edx,			ah									// 2
+// 		pmulhw		mm1,			mm7									// 1
+// #ifdef __BORLANDC__
+// 		} __emit__ (0x0f, 0x18, 0x49, 0xf4); _asm{ // prefetcht0	[ecx - 12]
+// #else
+// 		} _asm _emit 0x0f _asm _emit 0x18 _asm _emit 0x49 _asm _emit 0xf4 _asm{ // prefetcht0	[ecx - 12]
+// #endif
+// 		psllw		mm1,			1									// 1
+// 		movsx		eax,			al									// 2
+// 		paddw		mm2,			mm1									// 1
+// 		imul		eax,			pitch								// 2
 
-		lea			edx,			[ebx + edx + 1]						// 2
-		mov			esi,			src1								// 2
-		lea			eax,			[eax + edx*4]						// 2
+// 		lea			edx,			[ebx + edx + 1]						// 2
+// 		mov			esi,			src1								// 2
+// 		lea			eax,			[eax + edx*4]						// 2
 
-		mov			edx,			src2								// 2
-		movd		mm4,			[esi + eax]							// 2
-		movd		mm3,			[edx + eax]							// 2
-		punpcklbw	mm3,			mm0									// 2
-		punpcklbw	mm4,			mm0									// 2
-		psubw		mm3,			mm4									// 2
-		sub			ecx,			4
-		pmulhw		mm3,			mm7									// 2
-		psllw		mm3,			1									// 2
-		add			ebx,			2
-		paddw		mm4,			mm3									// 2
-		cmp			num,			ebx
-		packuswb	mm2,			mm4									// 1,2
-		mov			esi,			driftmap							// 1
-		movq		[edi+ebx*4-8],	mm2									// 1,2
+// 		mov			edx,			src2								// 2
+// 		movd		mm4,			[esi + eax]							// 2
+// 		movd		mm3,			[edx + eax]							// 2
+// 		punpcklbw	mm3,			mm0									// 2
+// 		punpcklbw	mm4,			mm0									// 2
+// 		psubw		mm3,			mm4									// 2
+// 		sub			ecx,			4
+// 		pmulhw		mm3,			mm7									// 2
+// 		psllw		mm3,			1									// 2
+// 		add			ebx,			2
+// 		paddw		mm4,			mm3									// 2
+// 		cmp			num,			ebx
+// 		packuswb	mm2,			mm4									// 1,2
+// 		mov			esi,			driftmap							// 1
+// 		movq		[edi+ebx*4-8],	mm2									// 1,2
 
-		jg			ploop_emmx_b_1
+// 		jg			ploop_emmx_b_1
 
-		add			num,			1
+// 		add			num,			1
 
-		cmp			num,			ebx
-		jng			pexit_emmx_b
+// 		cmp			num,			ebx
+// 		jng			pexit_emmx_b
 
-	ploop_emmx_b_2:
-		movzx		eax,			word ptr [ecx]
-		movzx		eax,			word ptr [esi + eax*2]
-		movsx		edx,			ah
-		lea			edx,			[ebx + edx]
-		movsx		eax,			al
-		imul		eax,			pitch
-		lea			eax,			[eax + edx*4]
+// 	ploop_emmx_b_2:
+// 		movzx		eax,			word ptr [ecx]
+// 		movzx		eax,			word ptr [esi + eax*2]
+// 		movsx		edx,			ah
+// 		lea			edx,			[ebx + edx]
+// 		movsx		eax,			al
+// 		imul		eax,			pitch
+// 		lea			eax,			[eax + edx*4]
 
-		mov			edx,			src2
-		mov			esi,			src1
-		movd		mm1,			[edx + eax]
-		movd		mm2,			[esi + eax]
-		punpcklbw	mm1,			mm0
-		punpcklbw	mm2,			mm0
-		psubw		mm1,			mm2
-		pmulhw		mm1,			mm7
-		psllw		mm1,			1
-		paddw		mm2,			mm1
-		packuswb	mm2,			mm0
-		mov			esi,			driftmap
-		movd		[edi+ebx*4],	mm2
+// 		mov			edx,			src2
+// 		mov			esi,			src1
+// 		movd		mm1,			[edx + eax]
+// 		movd		mm2,			[esi + eax]
+// 		punpcklbw	mm1,			mm0
+// 		punpcklbw	mm2,			mm0
+// 		psubw		mm1,			mm2
+// 		pmulhw		mm1,			mm7
+// 		psllw		mm1,			1
+// 		paddw		mm2,			mm1
+// 		packuswb	mm2,			mm0
+// 		mov			esi,			driftmap
+// 		movd		[edi+ebx*4],	mm2
 
-		inc			ebx
-		sub			ecx,			2
+// 		inc			ebx
+// 		sub			ecx,			2
 
-		cmp			num,			ebx
-		jg			ploop_emmx_b_2
+// 		cmp			num,			ebx
+// 		jg			ploop_emmx_b_2
 
-	pexit_emmx_b:
+// 	pexit_emmx_b:
 
-		emms
-	}
-}
-//---------------------------------------------------------------------------
-#endif
+// 		emms
+// 	}
+// }
+// //---------------------------------------------------------------------------
+// #endif
 
 
 //---------------------------------------------------------------------------
@@ -985,30 +985,30 @@ static tTVPRippleTransformFunc TVPRippleTransform_b = TVPRippleTransform_c_b;
 //---------------------------------------------------------------------------
 static void TVPInitRippleTransformFuncs()
 {
-	tjs_uint32 cputype = TVPGetCPUType();
-#ifndef _M_X64
-	if(cputype & TVP_CPU_HAS_MMX)
-	{
-		// MMX が使用可能な場合
-		TVPRippleTransform_f = TVPRippleTransform_mmx_f;
-		TVPRippleTransform_b = TVPRippleTransform_mmx_b;
-	}
+	// tjs_uint32 cputype = TVPGetCPUType();
+// #ifndef _M_X64
+// 	if(cputype & TVP_CPU_HAS_MMX)
+// 	{
+// 		// MMX が使用可能な場合
+// 		TVPRippleTransform_f = TVPRippleTransform_mmx_f;
+// 		TVPRippleTransform_b = TVPRippleTransform_mmx_b;
+// 	}
 
-	if((cputype & TVP_CPU_HAS_MMX) && (cputype & TVP_CPU_HAS_EMMX))
-	{
-		// MMX/EMMX が使用可能な場合
-		// EMMX バージョンは MMX バージョンに prefetch 命令を追加しただけだが
-		// 微妙に速い
-		TVPRippleTransform_f = TVPRippleTransform_emmx_f;
-		TVPRippleTransform_b = TVPRippleTransform_emmx_b;
-	}
-#endif
-	if(cputype & TVP_CPU_HAS_SSE2)
-	{
-		// SSE2 が使用可能な場合
-		TVPRippleTransform_f = TVPRippleTransform_sse2_f;
-		TVPRippleTransform_b = TVPRippleTransform_sse2_b;
-	}
+// 	if((cputype & TVP_CPU_HAS_MMX) && (cputype & TVP_CPU_HAS_EMMX))
+// 	{
+// 		// MMX/EMMX が使用可能な場合
+// 		// EMMX バージョンは MMX バージョンに prefetch 命令を追加しただけだが
+// 		// 微妙に速い
+// 		TVPRippleTransform_f = TVPRippleTransform_emmx_f;
+// 		TVPRippleTransform_b = TVPRippleTransform_emmx_b;
+// 	}
+// #endif
+// 	if(cputype & TVP_CPU_HAS_SSE2)
+// 	{
+// 		// SSE2 が使用可能な場合
+// 		TVPRippleTransform_f = TVPRippleTransform_sse2_f;
+// 		TVPRippleTransform_b = TVPRippleTransform_sse2_b;
+// 	}
 }
 //---------------------------------------------------------------------------
 
