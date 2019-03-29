@@ -10,10 +10,10 @@ GIT_HASH = nothing
 CUR_TIME = $(shell date +%s)
 ASMFLAGS += -fwin32 -DWIN32
 CFLAGS += -O3 -march=ivybridge -flto
-CFLAGS += -Wall -Wno-unused-value -Wno-format -fpermissive -I. -I.. -Ivc2012 -DGIT_HASH=L\"$(GIT_HASH)\" -DCUR_TIME=L\"$(CUR_TIME)\" -DNDEBUG -DWIN32 -D_WIN32 -D_WINDOWS 
-CFLAGS += -DWUTCWF_EXPORTS -D_USRDLL -DMINGW_HAS_SECURE_API -DUNICODE -D_UNICODE -DNO_STRICT -DCMAKE_INTDIR=\"Release\"   
+CFLAGS += -Wall -Wno-unused-value -Wno-format -fpermissive -I. -I../.. -Ivc2012 -DGIT_HASH=L\"$(GIT_HASH)\" -DCUR_TIME=L\"$(CUR_TIME)\" -DNDEBUG -DWIN32 -D_WIN32 -D_WINDOWS 
+CFLAGS += -DWMRDUMP_EXPORTS -D_USRDLL -DMINGW_HAS_SECURE_API -DUNICODE -D_UNICODE -DNO_STRICT -DCMAKE_INTDIR=\"Release\"   
 LDFLAGS += -static -static-libstdc++ -static-libgcc -shared -Wl,--kill-at
-LDLIBS += -luuid
+LDLIBS +=
 
 %.o: %.c
 	echo -e "\tCC  $<"
@@ -31,14 +31,14 @@ LDLIBS += -luuid
 	echo -e "\tWINDRES  $<"
 	$(WINDRES) --codepage=65001 $< $@
 
-SOURCES := tvpsnd.c WUMainUnit.cpp
+SOURCES := main.cpp ../../tp_stub.cpp
 OBJECTS := $(SOURCES:.c=.o)
 OBJECTS := $(OBJECTS:.cpp=.o)
 OBJECTS := $(OBJECTS:.asm=.o)
 OBJECTS := $(OBJECTS:.rc=.o)
 
-BINARY ?= wutcwf.dll
-ARCHIVE ?= wutcwf.$(GIT_HASH).7z
+BINARY ?= wmrdump.dll
+ARCHIVE ?= wmrdump.$(GIT_HASH).7z
 
 all: $(BINARY)
 

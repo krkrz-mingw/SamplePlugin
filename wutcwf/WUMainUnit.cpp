@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include "tvpsnd.h"
-
+#define EXPORT(hr) extern "C" __declspec(dllexport) hr __stdcall
 #include <stdio.h>
 //---------------------------------------------------------------------------
 #pragma argsused
@@ -567,7 +567,7 @@ bool TCWFDecoder::ReadBlock(int numchans, int chan)
 //---------------------------------------------------------------------------
 // ##########################################################################
 //---------------------------------------------------------------------------
-extern "C" __declspec(dllexport) HRESULT __stdcall GetModuleInstance(ITSSModule **out,
+EXPORT(HRESULT) GetModuleInstance(ITSSModule **out,
 	ITSSStorageProvider *provider,
 	IStream * config, HWND mainwin)
 {

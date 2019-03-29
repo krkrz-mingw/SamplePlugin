@@ -3,7 +3,7 @@
 
 #include "tp_stub.h"
 	// tp_stub.h と tp_stub.cpp は必ずプロジェクトに追加する
-
+#define EXPORT(hr) extern "C" __declspec(dllexport) hr __stdcall
 #include "wave.h"
 #include "mosaic.h"
 #include "turn.h"
@@ -19,7 +19,7 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
 }
 //---------------------------------------------------------------------------
 // V2Link は DLL がリンクされるときに実行される
-extern "C" __declspec(dllexport) HRESULT _stdcall V2Link(iTVPFunctionExporter *exporter)
+EXPORT(HRESULT) V2Link(iTVPFunctionExporter *exporter)
 {
 	// スタブの初期化
 	TVPInitImportStub(exporter); // 必ずこれは記述
@@ -39,7 +39,7 @@ extern "C" __declspec(dllexport) HRESULT _stdcall V2Link(iTVPFunctionExporter *e
 }
 //---------------------------------------------------------------------------
 // V2Unlink は DLL がアンリンクされるときに実行される
-extern "C" __declspec(dllexport) HRESULT _stdcall V2Unlink()
+EXPORT(HRESULT) V2Unlink()
 {
 	// トランジションハンドラプロバイダの登録削除
 	UnregisterWaveTransHandlerProvider();

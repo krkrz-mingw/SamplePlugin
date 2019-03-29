@@ -8,7 +8,7 @@
 #include "GDIDrawDevice.h"
 
 //---------------------------------------------------------------------------
-// ƒIƒvƒVƒ‡ƒ“
+// ã‚ªãƒ—ã‚·ãƒ§ãƒ³
 //---------------------------------------------------------------------------
 static tjs_int TVPPassThroughOptionsGeneration = 0;
 bool TVPZoomInterpolation = true;
@@ -66,8 +66,8 @@ void tTVPGDIDrawDevice::DestroyBitmap()
 //---------------------------------------------------------------------------
 void tTVPGDIDrawDevice::CreateBitmap()
 {
-	// ƒXƒNƒŠ[ƒ“ŒİŠ·‚Ì DDB ‚ğì¬‚·‚éB
-	// ‚±‚ê‚Í‚½‚¢‚Ä‚¢‚Ìê‡AƒrƒfƒIƒƒ‚ƒŠã‚Éì¬‚³‚ê‚éB
+	// ã‚¹ã‚¯ãƒªãƒ¼ãƒ³äº’æ›ã® DDB ã‚’ä½œæˆã™ã‚‹ã€‚
+	// ã“ã‚Œã¯ãŸã„ã¦ã„ã®å ´åˆã€ãƒ“ãƒ‡ã‚ªãƒ¡ãƒ¢ãƒªä¸Šã«ä½œæˆã•ã‚Œã‚‹ã€‚
 	DestroyBitmap();
 	tjs_int w, h;
 	GetSrcSize( w, h );
@@ -105,22 +105,22 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::AddLayerManager(iTVPLayerManager * manag
 {
 	if(inherited::Managers.size() > 0)
 	{
-		// "GDI" ƒfƒoƒCƒX‚Å‚Í‚Q‚ÂˆÈã‚ÌLayer Manager‚ğ“o˜^‚Å‚«‚È‚¢
+		// "GDI" ãƒ‡ãƒã‚¤ã‚¹ã§ã¯ï¼’ã¤ä»¥ä¸Šã®Layer Managerã‚’ç™»éŒ²ã§ããªã„
 		TVPThrowExceptionMessage(TJS_W("\"GDI\" device does not support layer manager more than 1"));
 	}
 	inherited::AddLayerManager(manager);
 
-	manager->SetDesiredLayerType(ltOpaque); // ltOpaque ‚Èo—Í‚ğó‚¯æ‚è‚½‚¢
+	manager->SetDesiredLayerType(ltOpaque); // ltOpaque ãªå‡ºåŠ›ã‚’å—ã‘å–ã‚ŠãŸã„
 }
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPGDIDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 {
 	TVPInitGDIOptions();
 	if( wnd ) {
-		// •`‰æ—p DC ‚ğæ“¾‚·‚é
+		// æç”»ç”¨ DC ã‚’å–å¾—ã™ã‚‹
 		TargetDC = ::GetDC(wnd);
 	} else {
-		// •`‰æ—p DC ‚ğŠJ•ú‚·‚é
+		// æç”»ç”¨ DC ã‚’é–‹æ”¾ã™ã‚‹
 		if(TargetDC) ::ReleaseDC(TargetWindow, TargetDC), TargetDC = NULL;
 	}
 
@@ -134,12 +134,12 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPGDIDrawDevice::SetDestRectangle(const tTVPRect & rect)
 {
-	// ˆÊ’u‚¾‚¯‚Ì•ÏX‚Ìê‡‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN‚·‚é
+	// ä½ç½®ã ã‘ã®å¤‰æ›´ã®å ´åˆã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 	if(rect.get_width() == DestRect.get_width() && rect.get_height() == DestRect.get_height()) {
-		// ˆÊ’u‚¾‚¯‚Ì•ÏX‚¾
+		// ä½ç½®ã ã‘ã®å¤‰æ›´ã 
 		inherited::SetDestRectangle(rect);
 	} else {
-		// ƒTƒCƒY‚àˆá‚¤
+		// ã‚µã‚¤ã‚ºã‚‚é•ã†
 		inherited::SetDestRectangle(rect);
 		DestroyBitmap();
 		EnsureDrawer();
@@ -154,15 +154,15 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::NotifyLayerResize(iTVPLayerManager * man
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPGDIDrawDevice::Show()
 {
-	// TODO ClipRect ‚Ìl—¶‚ªŒ‡‚¯‚Ä‚¢‚é
+	// TODO ClipRect ã®è€ƒæ…®ãŒæ¬ ã‘ã¦ã„ã‚‹
 	if(TargetDC && OffScreenDC && ShouldShow) {
-		// ƒIƒtƒXƒNƒŠ[ƒ“ƒrƒbƒgƒ}ƒbƒv‚ğ TargetDC ‚É“]‘—‚·‚é
+		// ã‚ªãƒ•ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã‚’ TargetDC ã«è»¢é€ã™ã‚‹
 		tjs_int srcw, srch;
 		GetSrcSize( srcw, srch );
 		tjs_int dstw = DestRect.get_width();
 		tjs_int dsth = DestRect.get_height();
 		if(dstw == srcw && dsth == srch) {
-			// Šg‘åEk¬‚Í•K—v‚È‚¢
+			// æ‹¡å¤§ãƒ»ç¸®å°ã¯å¿…è¦ãªã„
 			::BitBlt(TargetDC,
 				DestRect.left,
 				DestRect.top,
@@ -173,7 +173,7 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::Show()
 				0,
 				SRCCOPY);
 		} else {
-			// Šg‘åEk¬‚ª•K—v
+			// æ‹¡å¤§ãƒ»ç¸®å°ãŒå¿…è¦
 			if(TVPZoomInterpolation)
 				SetStretchBltMode(TargetDC, HALFTONE);
 			else
@@ -206,7 +206,7 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::NotifyBitmapCompleted(iTVPLayerManager *
 	const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity)
 {
 	TVPInitGDIOptions();
-	// DrawDibDraw ‚É‚Ä OffScreenDC ‚É•`‰æ‚ğs‚¤
+	// DrawDibDraw ã«ã¦ OffScreenDC ã«æç”»ã‚’è¡Œã†
 	if(DrawDibHandle && OffScreenDC) {
 		ShouldShow = true;
 		::DrawDibDraw(DrawDibHandle,
@@ -227,7 +227,7 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::NotifyBitmapCompleted(iTVPLayerManager *
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPGDIDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)
 {
-	// ‚â‚é‚±‚Æ‚È‚µ
+	// ã‚„ã‚‹ã“ã¨ãªã—
 }
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPGDIDrawDevice::SetShowUpdateRect(bool b)

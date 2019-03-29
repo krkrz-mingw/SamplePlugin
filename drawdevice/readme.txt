@@ -1,22 +1,22 @@
-������͂ȂɁH
+●これはなに？
 
-GDI ��p�����_�u���o�b�t�@�����O���s�� DrawDevice �ł��B
-DrawDevice �̃x�[�X�N���X�񋟂Ǝ����̃T���v�������˂Ă��܂��B
-ClipRect �̏������s���Ă��Ȃ��̂ŁA�v���C�}���[���C���[���E�B���h�E�T�C�Y���傫���ꍇ�Ȃ��Y��ɃN���b�s���O����Ȃ��Ȃǖ�肪����Ǝv���܂��B
-�Q�[���p�ł͂Ȃ��A�ǂ��炩�Ƃ����ƃc�[���p�ł����AVista �ȍ~�ʏ�̕`��� DirectX �ōs���Ă��錻�݂̊��ł͗]��Ӗ��͂Ȃ���������܂���B
+GDI を用いたダブルバッファリングを行う DrawDevice です。
+DrawDevice のベースクラス提供と実装のサンプルも兼ねています。
+ClipRect の処理を行っていないので、プライマリーレイヤーがウィンドウサイズより大きい場合など綺麗にクリッピングされないなど問題があると思います。
+ゲーム用ではなく、どちらかというとツール用ですが、Vista 以降通常の描画も DirectX で行われている現在の環境では余り意味はないかもしれません。
 
 
 
-���g����
+●使い方
 
-1. Window �� drawDevice �ɑ΂��Ďw��\�ł�
+1. Window の drawDevice に対して指定可能です
 
-���z�R�[�h�ŏ����ƃC���^�[�t�F�C�X�͈ȉ��̂悤�ɂȂ��Ă��܂��B
+仮想コードで書くとインターフェイスは以下のようになっています。
 class GDIDrawDevice {
 	property interface // read only
 };
 
-�ȉ��̂悤�ɂ��Ďg�p���܂��B
+以下のようにして使用します。
 -------------------------------------------
 Plugins.link("gdidrawdevice.dll");
 class MyWindow extends Window {
@@ -24,9 +24,9 @@ class MyWindow extends Window {
   function MyWindow(width,height) {
     super.Window();
     setInnerSize(width, height);
-    // drawdevice �������ւ�
+    // drawdevice を差し替え
     drawDevice = new GDIDrawDevice();
-     // �v���C�}�����C������
+     // プライマリレイヤ生成
     base = new Layer(this,null);
     base.setSize(width,height);
     add(base);
@@ -36,7 +36,7 @@ class MyWindow extends Window {
 
 
 
-�����C�Z���X
+●ライセンス
 
-���̃v���O�C���̃��C�Z���X�͋g���g���{�̂ɏ���(�C��BSD)���Ă��������B
+このプラグインのライセンスは吉里吉里本体に準拠(修正BSD)してください。
 

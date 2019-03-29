@@ -6,7 +6,7 @@
 #include "BasicDrawDevice.h"
 
 //---------------------------------------------------------------------------
-//! @brief		�uGDI�v�f�o�C�X
+//! @brief		「GDI」デバイス
 //---------------------------------------------------------------------------
 class tTVPGDIDrawDevice : public tTVPDrawDevice
 {
@@ -17,17 +17,17 @@ class tTVPGDIDrawDevice : public tTVPDrawDevice
 	HDRAWDIB DrawDibHandle;
 	bool DrawUpdateRectangle;
 	HDC TargetDC;
-	HBITMAP OffScreenBitmap; //!< �I�t�X�N���[���r�b�g�}�b�v
-	HDC OffScreenDC; //!< �I�t�X�N���[�� DC
-	HBITMAP OldOffScreenBitmap; //!< OffScreenDC �ɈȑO�I������Ă��� �r�b�g�}�b�v
-	bool ShouldShow; //!< show �Ŏ��ۂɉ�ʂɉ摜��]�����ׂ���
+	HBITMAP OffScreenBitmap; //!< オフスクリーンビットマップ
+	HDC OffScreenDC; //!< オフスクリーン DC
+	HBITMAP OldOffScreenBitmap; //!< OffScreenDC に以前選択されていた ビットマップ
+	bool ShouldShow; //!< show で実際に画面に画像を転送すべきか
 
 
 public:
-	tTVPGDIDrawDevice(); //!< �R���X�g���N�^
+	tTVPGDIDrawDevice(); //!< コンストラクタ
 
 private:
-	~tTVPGDIDrawDevice(); //!< �f�X�g���N�^
+	~tTVPGDIDrawDevice(); //!< デストラクタ
 
 	bool IsTargetWindowActive() const;
 
@@ -41,25 +41,25 @@ public:
 public:
 	void EnsureDevice();
 
-//---- LayerManager �̊Ǘ��֘A
+//---- LayerManager の管理関連
 	virtual void TJS_INTF_METHOD AddLayerManager(iTVPLayerManager * manager);
 
-//---- �`��ʒu�E�T�C�Y�֘A
+//---- 描画位置・サイズ関連
 	virtual void TJS_INTF_METHOD SetTargetWindow(HWND wnd, bool is_main);
 	virtual void TJS_INTF_METHOD SetDestRectangle(const tTVPRect & rect);
 	virtual void TJS_INTF_METHOD NotifyLayerResize(iTVPLayerManager * manager);
 
-//---- �ĕ`��֘A
+//---- 再描画関連
 	virtual void TJS_INTF_METHOD Show();
 
-//---- LayerManager ����̉摜�󂯓n���֘A
+//---- LayerManager からの画像受け渡し関連
 	virtual void TJS_INTF_METHOD StartBitmapCompletion(iTVPLayerManager * manager);
 	virtual void TJS_INTF_METHOD NotifyBitmapCompleted(iTVPLayerManager * manager,
 		tjs_int x, tjs_int y, const void * bits, const BITMAPINFO * bitmapinfo,
 		const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity);
 	virtual void TJS_INTF_METHOD EndBitmapCompletion(iTVPLayerManager * manager);
 
-//---- �f�o�b�O�x��
+//---- デバッグ支援
 	virtual void TJS_INTF_METHOD SetShowUpdateRect(bool b);
 };
 //---------------------------------------------------------------------------
