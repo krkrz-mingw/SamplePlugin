@@ -3,5 +3,7 @@ SOURCES += WUMainUnit.cpp
 
 PROJECT_BASENAME = wutcwf
 
-TVPSND_BASE = ../external/tvpsnd/
-include $(TVPSND_BASE)/Rules.lib.make
+USE_TVPSND = 1
+
+TP_STUB_BASE = ../external/tp_stubz/
+include $(TP_STUB_BASE)/Rules.lib.make
