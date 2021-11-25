@@ -100,7 +100,7 @@ class tWMRDumpStartFunction : public tTJSDispatch
 		tTJSVariant mode, proc, userdata;
 		tTJSVariant *p[3] = {&mode, &proc, &userdata};
 		mode = (tTVInteger)(tjs_int)wrmRegister;
-		proc = (tTVInteger)reinterpret_cast<tjs_int>(MyReceiver);
+		proc = (tTVInteger)reinterpret_cast<tjs_intptr_t>(MyReceiver);
 		userdata = (tTVInteger)(tjs_int)0;
 		obj->FuncCall(0, TJS_W("registerMessageReceiver"), NULL,
 			NULL, 3, p, obj);
@@ -112,7 +112,7 @@ class tWMRDumpStartFunction : public tTJSDispatch
 		hwnd = reinterpret_cast<HWND>((tjs_int)(val));
 
 		TVPAddLog(TJS_W("Window handle ") +
-			TJSInt32ToHex(reinterpret_cast<tjs_int>(hwnd), 8));
+			TJSInt32ToHex(reinterpret_cast<tjs_intptr_t>(hwnd), 8));
 
 		return TJS_S_OK;
 	}
@@ -139,7 +139,7 @@ class tWMRDumpStopFunction : public tTJSDispatch
 		tTJSVariant mode, proc, userdata;
 		tTJSVariant *p[3] = {&mode, &proc, &userdata};
 		mode = (tTVInteger)(tjs_int)wrmUnregister;
-		proc = (tTVInteger)reinterpret_cast<tjs_int>(MyReceiver);
+		proc = (tTVInteger)reinterpret_cast<tjs_intptr_t>(MyReceiver);
 		userdata = (tTVInteger)(tjs_int)0;
 		obj->FuncCall(0, TJS_W("registerMessageReceiver"), NULL,
 			NULL, 3, p, obj);
