@@ -52,7 +52,9 @@ tTVPGDIDrawDevice::~tTVPGDIDrawDevice()
 {
 	DestroyBitmap();
 	if(TargetDC && TargetWindow) ::ReleaseDC(TargetWindow, TargetDC);
+#if !defined(_M_ARM) && !defined(_M_ARM64)
 	if(DrawDibHandle) ::DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
+#endif
 }
 //---------------------------------------------------------------------------
 void tTVPGDIDrawDevice::DestroyBitmap()
@@ -124,10 +126,14 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::SetTargetWindow(HWND wnd, bool is_main)
 		if(TargetDC) ::ReleaseDC(TargetWindow, TargetDC), TargetDC = NULL;
 	}
 
+#if !defined(_M_ARM) && !defined(_M_ARM64)
 	if(DrawDibHandle) ::DrawDibClose(DrawDibHandle), DrawDibHandle = NULL;
+#endif
 	TargetWindow = wnd;
 	IsMainWindow = is_main;
+#if !defined(_M_ARM) && !defined(_M_ARM64)
 	DrawDibHandle = DrawDibOpen();
+#endif
 
 	CreateBitmap();
 }
@@ -206,6 +212,7 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::NotifyBitmapCompleted(iTVPLayerManager *
 	const tTVPRect &cliprect, tTVPLayerType type, tjs_int opacity)
 {
 	TVPInitGDIOptions();
+#if !defined(_M_ARM) && !defined(_M_ARM64)
 	// DrawDibDraw にて OffScreenDC に描画を行う
 	if(DrawDibHandle && OffScreenDC) {
 		ShouldShow = true;
@@ -223,6 +230,7 @@ void TJS_INTF_METHOD tTVPGDIDrawDevice::NotifyBitmapCompleted(iTVPLayerManager *
 			cliprect.get_height(),
 			0);
 	}
+#endif
 }
 //---------------------------------------------------------------------------
 void TJS_INTF_METHOD tTVPGDIDrawDevice::EndBitmapCompletion(iTVPLayerManager * manager)

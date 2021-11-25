@@ -1,7 +1,11 @@
 
 SOURCES += BasicDrawDevice.cpp GDIDrawDevice.cpp Main.cpp
 
-LDLIBS += -lvfw32 -lgdi32
+LDLIBS += -lgdi32
+
+ifneq (x,x$(findstring intel,$(TARGET_ARCH)))
+LDLIBS += -lvfw32
+endif
 
 PROJECT_BASENAME = drawdevice
 
