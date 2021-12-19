@@ -1,8 +1,7 @@
 
-.PHONY: all clean
+.PHONY: all archive clean
 
 all:
-	$(MAKE) -C drawdevice
 	$(MAKE) -C drawdevice
 	$(MAKE) -C nativeclasstest
 	$(MAKE) -C wutcwf
@@ -14,8 +13,19 @@ all:
 	$(MAKE) -C xp3filter/xp3enc
 	$(MAKE) -C xp3filter/xp3dec
 
+archive:
+	$(MAKE) -C drawdevice archive
+	$(MAKE) -C nativeclasstest archive
+	$(MAKE) -C wutcwf archive
+	$(MAKE) -C wmrdump archive
+	$(MAKE) -C exceptiontest archive
+	$(MAKE) -C imagesaver archive
+	$(MAKE) -C extrans archive
+	$(MAKE) -C basetest archive
+	$(MAKE) -C xp3filter/xp3enc archive
+	$(MAKE) -C xp3filter/xp3dec archive
+
 clean:
-	$(MAKE) -C drawdevice clean
 	$(MAKE) -C drawdevice clean
 	$(MAKE) -C nativeclasstest clean
 	$(MAKE) -C wutcwf clean
